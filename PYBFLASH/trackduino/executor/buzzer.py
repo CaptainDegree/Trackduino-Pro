@@ -1,4 +1,4 @@
-from pyb import Pin
+from pyb import Pin, delay
 from trackduino.common import amap, constrain, has_pwm
 from trackduino.timer_manager import *
 
@@ -46,3 +46,13 @@ class Buzzer:
     def off(self):
         self._is_on = False
         TimerManager.set_percent(self._channel, 0)
+    
+    def tone(self, freq=None, volume=None, time_ms):
+        if freq is not None:
+            self.freq = freq
+        if volume is not None:
+            self.volume = volume
+        
+        self.on()
+        delay(time_ms)
+        self.off()
