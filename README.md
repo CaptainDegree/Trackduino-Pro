@@ -13,42 +13,43 @@ This **API** contains:
 
 | Notation | Meaning                       |
 | :------: | :---------------------------- |
-|    IR    | Infrared                      |
-|   CdS    | Cadmium sulfide photoresistor |
 |    BT    | Bluetooth                     |
+|   CdS    | Cadmium sulfide photoresistor |
+|    IR    | Infrared                      |
+|   LED    | Light-emitting diode          |
 |    RC    | Remote control                |
 
 ## Robotrack's driver compatibility
 
-| Sensor                                     | Implemented |
-| :----------------------------------------- | :---------: |
-| Analog mic                                 |     ✔️      |
-| Built-in buttons                           |     ✔️      |
-| Button                                     |     ✔️      |
-| CdS                                        |     ✔️      |
-| Combined color sensor                      |     ✔️      |
-| Digital mic                                |     ✔️      |
-| External motor encoder                     |     ✔️      |
-| Flame sensor                               |     ✔️      |
-| IR sensor                                  |     ✔️      |
-| Magnetic field sensor                      |     ✔️      |
-| Temperature sensor                         |     ✔️      |
-| Tilt sensor                                |     ✔️      |
-| Ultrasonic distance sensor                 |     ✔️      |
-| Vibration sensor                           |     ✔️      |
-| Accelerometer / Gyroscope                  |      ❌      |
-| BT RC                                      |      ❌      |
-| IR RC receiver                             |      ❌      |
-| Neurotrack connector                       |      ❌      |
-| Young Neurophysiologist-engineer connector |      ❌      |
+| Sensor                                         | Implemented |
+| :--------------------------------------------- | :---------: |
+| Analog mic                                     |     ✔️      |
+| Built-in buttons                               |     ✔️      |
+| Button                                         |     ✔️      |
+| CdS                                            |     ✔️      |
+| Combined color sensor                          |     ✔️      |
+| Digital mic                                    |     ✔️      |
+| External motor encoder                         |     ✔️      |
+| Flame sensor                                   |     ✔️      |
+| IR sensor                                      |     ✔️      |
+| Magnetic field sensor                          |     ✔️      |
+| Temperature sensor                             |     ✔️      |
+| Tilt sensor                                    |     ✔️      |
+| Ultrasonic distance sensor                     |     ✔️      |
+| Vibration sensor                               |     ✔️      |
+| Accelerometer / Gyroscope                      |      ❌      |
+| BT RC                                          |      ❌      |
+| IR RC receiver                                 |      ❌      |
+| **Neurotrack** connector                       |      ❌      |
+| **Young Neurophysiologist-engineer** connector |      ❌      |
 
-| Executor      | Implemented |
-| :------------ | :---------: |
-| DC motor      |     ✔️      |
-| Servo (Big)   |     ✔️      |
-| Servo (Small) |     ✔️      |
-| Buzzer        |     ✔️      |
-| Built-in LED  |     ✔️      |
-| LED           |     ✔️      |
-| Display       |      ❌      |
-| Audiotrack    |      ❌      |
+| Executor       | Implemented |
+| :------------- | :---------: |
+| DC motor       |     ✔️      |
+| Servo (Big)    |     ✔️      |
+| Servo (Small)  |     ✔️      |
+| Buzzer         |     ✔️      |
+| Built-in LED   |     ✔️      |
+| LED            |     ✔️      |
+| Display module |      ❌      |
+| **Audiotrack** |      ❌      |
