@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"name": "GitHub Repository",
+			"path": "."
+		},
+		{
+			"name": "Firmware",
+			"path": "PYBFLASH"
+		}
+	],
+	"settings": {
+		"python.autoComplete.extraPaths": [
+			"./micropython_dummies"
+		]
+	},
+	"extensions": {
+		"recommendations": [
+			"ms-python.python",
+			"visualstudioexptteam.vscodeintellicode",
+		]
+	}
+}
