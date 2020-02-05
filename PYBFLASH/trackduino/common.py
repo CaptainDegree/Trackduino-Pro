@@ -111,7 +111,7 @@ def analog_read(adc_pin, bit=10):
     data = adc_pin.read()
     bit = constrain(bit, 8, 12)
 
-    return data // (2 ** (12 - bit))
+    return data >> (12 - bit)
 
 
 def analog_write_percent(pin, percent):
