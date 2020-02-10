@@ -1,5 +1,6 @@
 from micropython import const
 from pyb import Pin, micros, elapsed_micros, millis
+import uctypes
 
 
 class IRRC(object):
@@ -49,6 +50,7 @@ class IRRC(object):
         self._res = 0
         self._state = 0
         self._timeout_mark = 0
+        self._buf = 0
 
         self._time = micros()
 
@@ -65,40 +67,72 @@ class IRRC(object):
         else:
             raise ValueError("`channel` must be the one of IRRC.Channel")
 
+    @property
+    def _res(self):
+        return self._res
+
+    @_res.setter
+    def _res(self, _res):
+        self._res = _res & (uctypes.UINT32 - 1)
+
+    @property
+    def _buf(self):
+        return self._buf
+
+    @_buf.setter
+    def _buf(self, _buf):
+        self._buf = _buf & (uctypes.UINT8 - 1)
+
+    @property
+    def _button_id(self):
+        return self._button_id
+
+    @_button_id.setter
+    def _button_id(self, _button_id):
+        self._button_id = _button_id & (uctypes.UINT32 - 1)
+
+    @property
+    def _state(self):
+        return self._state
+
+    @_state.setter
+    def _state(self, _state):
+        self._state = _state & 0x7F
+
     def _update(self):
         diff_time = elapsed_micros(self._time)
         self._time += diff_time
 
-        buf = diff_time
+        self._buf = diff_time
         del diff_time
 
-        if buf % 200 > 101:
-            buf = (buf // 200) + 1
+        if self._buf % 200 > 101:
+            self._buf = (self._buf // 200) + 1
         else:
-            buf //= 200
+            self._buf //= 200
 
-        if buf == 0:
-            buf = 1
+        if self._buf == 0:
+            self._buf = 1
 
         if self._state == 0:
             if not self._impulse:
                 self._state += 1
-                self._res = 0 << buf
+                self._res = 0 << self._buf
         else:
             if self._impulse:
-                self._res <<= buf
-                for i in range(buf):
+                self._res <<= self._buf
+                for i in range(self._buf):
                     self._res |= 1 << i
             else:
-                self._res << buf
+                self._res <<= self._buf
 
                 if (self._res & 0x7F) == 0x38:
-                    buf = 1
+                    self._buf = 1
 
                     for i in range(1, self._SHIFT):
-                        buf = (buf << 1) + 1
+                        self._buf = (self._buf << 1) + 1
 
-                    channel_buf = (self._res >> 6) & buf
+                    channel_buf = ((self._res >> 6) & self._buf) & 0x7F  # channel_buf is byte
 
                     if channel_buf == self._channel:
                         self._button_id = self._res >> (6 + self._SHIFT)
