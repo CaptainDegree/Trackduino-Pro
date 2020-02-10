@@ -1,10 +1,12 @@
-from typing import Optional, List, Tuple, Union
+from typing import Optional, List, Tuple, Union, Callable
 
 
 def delay(ms: int) -> None:
-    """
-    Delay for the given number of milliseconds.
-    """
+    """Delay for the given number of milliseconds.
+    
+    :param ms: Milliseconds to be delayed
+    :type ms: int
+    """    
     pass
 
 
@@ -260,16 +262,23 @@ class Pin(object):
         E15 = None
         # endregion
 
-    IN = None
-    OUT = None
-    OUT_OD = None
-    OUT_PP = None
-    AF_OD = None
-    AF_PP = None
-    ANALOG = None
-    PULL_NONE = None
-    PULL_UP = None
-    PULL_DOWN = None
+    IN: int = None
+    OUT: int = None
+    OUT_OD: int = None
+    OUT_PP: int = None
+    
+    AF_OD: int = None
+    AF_PP: int = None
+    ANALOG: int = None
+    
+    PULL_NONE: int = None
+    PULL_UP: int = None
+    PULL_DOWN: int = None
+
+    IRQ_FALLING: int = None
+    IRQ_RISING: int = None
+    IRQ_LOW_LEVEL: int = None
+    IRQ_HIGH_LEVEL: int = None
 
     def __init__(self, id, mode=IN, pull=PULL_NONE):
         pass
@@ -323,6 +332,31 @@ class Pin(object):
     def af_list(self) -> List[PinAF]:
         """
         Returns an array of alternate functions available for this pin.
+        """
+        pass
+
+    def irq(self, handler: Callable[Pin] = None, trigger: int = (Pin.IRQ_FALLING | Pin.IRQ_RISING), priority: int = 1, wake: int = None, hard: bool = False):
+        """
+        Configure an interrupt handler to be called when the trigger source of the pin is active. If the pin mode is `Pin.IN` then the trigger source is the external value on the pin. If the pin mode is `Pin.OUT` then the trigger source is the output buffer of the pin. Otherwise, if the pin mode is `Pin.OPEN_DRAIN` then the trigger source is the output buffer for state ‘0’ and the external pin value for state ‘1’.
+
+        The arguments are:
+
+        `handler` is an optional function to be called when the interrupt triggers. The handler must take exactly one argument which is the Pin instance.
+
+        `trigger` configures the event which can generate an interrupt. Possible values are:
+
+            `Pin.IRQ_FALLING` interrupt on falling edge.
+            `Pin.IRQ_RISING` interrupt on rising edge.
+            `Pin.IRQ_LOW_LEVEL` interrupt on low level.
+            `Pin.IRQ_HIGH_LEVEL` interrupt on high level.
+        
+        These values can be `OR`’ed together to trigger on multiple events.
+
+        `priority` sets the priority level of the interrupt. The values it can take are port-specific, but higher values always represent higher priorities.
+
+        `wake` selects the power mode in which this interrupt can wake up the system. It can be `machine.IDLE`, `machine.SLEEP` or `machine.DEEPSLEEP`. These values can also be OR’ed together to make a pin generate interrupts in more than one power mode.
+
+        `hard` if true a hardware interrupt is used. This reduces the delay between the pin change and the handler being called. Hard interrupt handlers may not allocate memory; see Writing interrupt handlers.
         """
         pass
 
@@ -421,7 +455,7 @@ class Timer(object):
     FALLING: int = None
     BOTH: int = None
 
-    def __init__(self, id: int, freq: int = None, prescaler: int = None, period: int = None, mode: int = None, div: int = None, callback: function = None, deadtime: int = None):
+    def __init__(self, id: int, freq: int = None, prescaler: int = None, period: int = None, mode: int = None, div: int = None, callback: Callable[Timer] = None, deadtime: int = None):
         """
         Construct a new timer object of the given `id`. If additional arguments are given, then the timer is initialized by `init(...)`. id can be 1 to 14.
 
@@ -457,13 +491,13 @@ class Timer(object):
         """
         pass
 
-    def callback(self, fun: function) -> None:
+    def callback(self, fun: Callable[Timer]) -> None:
         """
         Set the function to be called when the timer triggers. `fun` is passed 1 argument, the timer object. If `fun` is `None` then the callback will be disabled.
         """
         pass
 
-    def channel(self, channel: int, mode: int, callback: function = None, pin: Pin = None, pulse_width: int = None, pulse_width_percent: int = None, compare: int = None, polarity: int = None) -> TimerChannel:
+    def channel(self, channel: int, mode: int, callback: Callable[Timer] = None, pin: Pin = None, pulse_width: int = None, pulse_width_percent: int = None, compare: int = None, polarity: int = None) -> TimerChannel:
         """
         If only a channel number is passed, then a previously initialized channel object is returned (or `None` if there is no previous channel).
 
@@ -574,7 +608,7 @@ class TimerChannel(object):
         """
         pass
 
-    def callback(self, fun: function) -> None:
+    def callback(self, fun: Callable[Timer]) -> None:
         """
         Set the function to be called when the timer channel triggers. fun is passed 1 argument, the timer object. If fun is None then the callback will be disabled.
         """

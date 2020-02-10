@@ -1,5 +1,5 @@
 from micropython import const
-from pyb import Pin
+from pyb import Pin, micros, elapsed_micros, millis
 
 
 class IRRC(object):
@@ -32,17 +32,27 @@ class IRRC(object):
         F6 = const(0x703)
         OFF = const(0x733)
 
-    _CHANNELS = tuple(IRRC.Channel.CHANNEL_1, IRRC.Channel.CHANNEL_2, IRRC.Channel.CHANNEL_3, IRRC.Channel.CHANNEL_4,
-                      IRRC.Channel.CHANNEL_5, IRRC.Channel.CHANNEL_6, IRRC.Channel.CHANNEL_7, IRRC.Channel.CHANNEL_8)
-    _KEYS = tuple(IRRC.Key.UP, IRRC.Key.DOWN, IRRC.Key.LEFT, IRRC.Key.RIGHT, IRRC.Key.UP_AND_LEFT_KEY, IRRC.Key.UP_AND_RIGHT_KEY,
-                  IRRC.Key.DOWN_AND_LEFT_KEY, IRRC.Key.DOWN_AND_RIGHT_KEY, IRRC.Key.F1, IRRC.Key.F2, IRRC.Key.F3, IRRC.Key.F4, IRRC.Key.F5, IRRC.Key.F6, IRRC.Key.OFF)
-
     _TIMEOUT = const(500)
     _SHIFT = const(8)
 
     def __init__(self, pin: Pin, channel: int):
-        self._pin = pin
+        self._CHANNELS = (self.Channel.CHANNEL_1, self.Channel.CHANNEL_2, self.Channel.CHANNEL_3, self.Channel.CHANNEL_4,
+                     self.Channel.CHANNEL_5, self.Channel.CHANNEL_6, self.Channel.CHANNEL_7, self.Channel.CHANNEL_8)
+        self._KEYS = (self.Key.UP, self.Key.DOWN, self.Key.LEFT, self.Key.RIGHT, self.Key.UP_AND_LEFT_KEY, self.Key.UP_AND_RIGHT_KEY, self.Key.DOWN_AND_LEFT_KEY,
+                 self.Key.DOWN_AND_RIGHT_KEY, self.Key.F1, self.Key.F2, self.Key.F3, self.Key.F4, self.Key.F5, self.Key.F6, self.Key.OFF)
+
+        self._pin = Pin(pin, mode=Pin.IN, pull=Pin.PULL_UP)
         self.channel = channel
+
+        self._button_id = 0
+        self._impulse = True
+        self._res = 0
+        self._state = 0
+        self._timeout_mark = 0
+
+        self._time = micros()
+
+        self._pin.irq(lambda p: self._update())
 
     @property
     def channel(self) -> int:
@@ -50,13 +60,69 @@ class IRRC(object):
 
     @channel.setter
     def channel(self, channel: int):
-        if channel in IRRC._CHANNELS:
+        if channel in self._CHANNELS:
             self._channel = channel
         else:
             raise ValueError("`channel` must be the one of IRRC.Channel")
 
+    def _update(self):
+        diff_time = elapsed_micros(self._time)
+        self._time += diff_time
+
+        buf = diff_time
+        del diff_time
+
+        if buf % 200 > 101:
+            buf = (buf // 200) + 1
+        else:
+            buf //= 200
+
+        if buf == 0:
+            buf = 1
+
+        if self._state == 0:
+            if not self._impulse:
+                self._state += 1
+                self._res = 0 << buf
+        else:
+            if self._impulse:
+                self._res <<= buf
+                for i in range(buf):
+                    self._res |= 1 << i
+            else:
+                self._res << buf
+
+                if (self._res & 0x7F) == 0x38:
+                    buf = 1
+
+                    for i in range(1, self._SHIFT):
+                        buf = (buf << 1) + 1
+
+                    channel_buf = (self._res >> 6) & buf
+
+                    if channel_buf == self._channel:
+                        self._button_id = self._res >> (6 + self._SHIFT)
+
+                        while not (self._button_id & 1):
+                            self._button_id >>= 1
+
+                        self._timeout_mark = millis()
+
+                    self._state = 0
+                    self._res = 0
+
+        self._impulse = not self._impulse
+
     def pressed(self, key: int) -> bool:
-        if key in IRRC._KEYS:
+        if key in self._KEYS:
             pass
         else:
             raise ValueError("`key` must be the one of IRRC.KEY")
+
+        if (millis() - self._timeout_mark >= self._TIMEOUT):
+            self._button_id = self.Key.OFF
+
+        if (key == self._button_id):
+            return True
+
+        return False
